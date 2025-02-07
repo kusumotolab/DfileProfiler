@@ -9,14 +9,11 @@
   "categories": [
     "Other"
   ],
-  "activationEvents": [
-    "onCommand:dfileView.start"
-  ],
   "main": "./dist/extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "dfileView.start",
+        "command": "dfileProfiler.start",
         "title": "DfileProfiler"
       }
     ],
@@ -32,7 +29,7 @@
     "menus": {
       "editor/title": [
         {
-          "command": "dfileView.start",
+          "command": "dfileProfiler.start",
           "group": "navigation"
         }
       ]

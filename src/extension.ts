@@ -5,7 +5,7 @@ import { Control } from './control';
 export function activate(context: vscode.ExtensionContext) {
 
 	context.subscriptions.push(
-		vscode.commands.registerCommand('dfileView.start', async () => {
+		vscode.commands.registerCommand('dfileProfiler.start', async () => {
 			const control = new Control(context);
 		})
 	);
