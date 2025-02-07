@@ -184,29 +184,11 @@ export class Control {
                         // Dfileと同じグループでファイルを開く
                         vscode.window.showTextDocument(tmpEditor.document, {
                             viewColumn: editor.viewColumn,
-                            //preserveFocus: true, // フォーカスを保持する
                             preview: false // プレビューではなく、常に新しいタブとして開く
                         });
                     }
-                    /*if(!dockerParser.normalEndFlag){
-                        layerView.header1 = 'Building......';
-                        layerView.loading = `var gif = document.getElementById('loading');
-                        gif.style.display = 'none'; // GIFを非表示`;
-                        layerView.setHtml();
-                    }*/
                 }
-                //console.log("dfileActiveFlag : " + dfileMonitor.dfileActiveFlag);
             }
-            /*panel.onDidChangeViewState((event) => { // ウェブビューにフォーカスしたとき
-                if (event.webviewPanel.active) {
-                    console.log("ウェブビューにフォーカス");
-                    if(dfileMonitor.dfileActiveFlag){
-                        //vscode.window.showTextDocument(editor.document.uri, { viewColumn: editor.viewColumn });
-                    }else{
-                        //vscode.window.showTextDocument(focusedEditor.document.uri, { viewColumn: focusedEditor.viewColumn });
-                    }
-                }
-            });*/
         });
     }
 }

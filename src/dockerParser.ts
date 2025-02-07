@@ -58,12 +58,10 @@ export class DockerParser {
             let buildLog = '';
             // Dockerビルドのコマンドをspawnで実行
             let buildProcess = spawn('docker', ['build', '--progress=plain', '-t', 'myimage', '-f', dockerfilePath, buildContext]);
-            //let buildRes = await exec(`docker build --progress=plain -t myimage -f ${dockerfilePath} ${buildContext}`, {maxBuffer: 50 * 1024 * 1024});
 
             // 標準出力をWebviewに送信
             buildProcess.stdout.on('data', (data:any) => {
                 console.log(data.toString());
-                //panel.webview.postMessage({ type: 'stdout', text: data.toString() });
             });
 
             // 標準エラー出力をWebviewに送信
@@ -223,9 +221,6 @@ export class DockerParser {
                 this.handlePath(source, layer.fileDirArray, subjectPath);  // パスの処理を行う関数を呼び出し
             }
             console.log(layer.code + "のfileDirArray");
-            /*layer.fileDirArray.forEach((fileDir:string) => {
-                console.log('fileDirArrayの中身 = ' + fileDir);
-            });*/
         });
     }
     
@@ -285,43 +280,8 @@ export class DockerParser {
     // 過去のビルドコメントを全て取得する関数
     setCommentArray(layerView:LayerView){
          for(let i = 0; i < layerView.radioCnt; i++){
-            /*const Diff = require("diff");
-            const source = this.stateArray[i].layerView.dfileStr;
-            const diff = layerView.dfileStr;
-
-            const differences = Diff.diffLines(source, diff);
-            let oldLineNumber = 1; // 元Dfileの行番号
-            let newLineNumber = 1; // 新Dfileの行番号
-            let ret = '';
-            differences.forEach((part: { added: any; count: number; value: string; removed: any; }) => {
-                if(part.added){
-                    newLineNumber += part.count;
-                    ret += (newLineNumber + ': + ' + part.value + '\n');
-                }else if(part.removed) {
-                    oldLineNumber += part.count;
-                    ret += (oldLineNumber + ': - ' + part.value + '\n');
-                }else{
-                    oldLineNumber += part.count;
-                    newLineNumber += part.count;
-                }
-            })
-
-            ret += ('\n<Prev Dockerfile>\n\n' + source);*/
 
             layerView.commentArray[i]  = this.stateArray[i].layerView.comment;
-
-            /*let options = prettydiff.options;
-            options.source = layerView.dfileStr;
-            options.diff = this.stateArray[i].layerView.dfileStr;
-            options.diff_format = "html";
-            options.mode = "diff";
-            options.language = "dockerfile";
-            options.lexer = "script";
-            options.wrap = 0;
-            options.diff_view = "inline";
-            layerView.diffsDfile[i]  = prettydiff()*/
-            //console.log('Diff Ret: ' + layerView.diffsDfile[i]);
         }
     }
-  
 }

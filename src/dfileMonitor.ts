@@ -152,7 +152,6 @@ export class DfileMonitor {
             }
         }
         // ビルド時のdfileに戻った場合
-        //console.log('dfileは初期状態です');
         // 全ての色を消した後
         // drawer.fileDiri以降を塗る(ただしdrawer.fileDiriはcomponentArrayの長さ未満でないといけない)
         // drawer.dfileiをcomponentArrayの長さに更新

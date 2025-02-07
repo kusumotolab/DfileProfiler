@@ -46,28 +46,6 @@ export class Drawer {
         let y = lineHeight*5 + yOffset; // 必要に応じて調整
 
         for(let i = 0; i < lines.length; i++){
-            /*if(lines[i].indexOf('FROM') === 0){
-                // FROMの処理
-                while(layerArray[layerArrayIndex].code.indexOf('/') === 0){
-                    if(layerArray[layerArrayIndex].size !== '0'){
-                        baseImagesize += parseInt(layerArray[layerArrayIndex].size);
-                    }
-                    layerArrayIndex++;
-                }
-
-                totalSize += baseImagesize;
-                totalBuildTime += (layerArray[0].buildTime != 'CACHED') ? parseFloat(layerArray[0].buildTime) : 0;
-
-                // サイズ用の棒グラフ情報を作成
-                const sizeRectangle = new Rectangle(sizeX, y, sizeRectWidthArray[0], lineHeight, 'New Layer');
-                // ビルド時間用の棒グラフ情報を作成
-                const buildTimeRectangle = new Rectangle(buildTimeX, y, buildTimeRectWidthArray[0], lineHeight, 'New Layer');
-                // レイヤービュー1行分の構成要素を作成
-                const layerViewComponent = new LayerViewComponent(0, 'FROM', i, baseImagesize, layerArray[0].buildTime, sizeRectangle, buildTimeRectangle);
-                
-                this.layerView.componentArray.push(layerViewComponent);
-                y += (lineHeight + lineSpace);
-            }*/
             if(lines[i].startsWith('FROM') || lines[i].startsWith('RUN') || lines[i].startsWith('ADD') || lines[i].startsWith('COPY') || lines[i].startsWith('WORKDIR')){
                 let instruction = '';
                 if(lines[i].startsWith('FROM')){
@@ -112,13 +90,7 @@ export class Drawer {
         });
 
         // レイヤービューを更新
-        //vscode.window.showInformationMessage('Build Completed!');
         this.layerView.header1 = 'Build Completed!';
-        //let content = 'Layers : ' + layerArray.length;
-        /*for(let i = 0; i < lines.length; i++){
-            content += '<br>'; // スクロール機能をオンにするために空白行を挿入
-        }*/
-        //this.layerView.header2 = content;
 
         // 前回のビルドとの差分をビューに反映
         this.setDiffInfo(this.stateArray, scale, this.stateArray.length-1);
@@ -344,49 +316,4 @@ export class Drawer {
             }
         });
     }
-
-    // レイヤービューの棒グラフの位置を更新する関数
-    /*changeRectangleY(editorText:string, changeLine:number){
-        const lines = editorText.split('\n');
-        let lineHeight = this.calculateLineHeight();
-        let y = lineHeight;
-
-        let layerArrayIndex = 0;
-        for(let i = 0; i < lines.length; i++){
-            if(lines[i].indexOf('FROM') === 0){
-                // FROMの処理
-                /*while(layerArray[layerArrayIndex].code.indexOf('/') === 0){
-                    if(layerArray[layerArrayIndex].size !== '0'){
-                        baseImagesize += parseInt(layerArray[layerArrayIndex].size);
-                    }
-                    layerArrayIndex++;
-                }*/
-
-                // 長方形の位置を変更
-                /*this.layerView.rectangleArray[0].y = y;
-                this.layerView.rectangleArray[1].y = y;
-                layerArrayIndex++;
-                
-                y += lineHeight;
-            }else if(lines[i].indexOf('RUN') === 0 || lines[i].indexOf('ADD') === 0 || lines[i].indexOf('COPY') === 0){
-
-                var changeLineHistory;
-                // 新たにレイヤーを作成する命令を挿入した場合
-                if(i === changeLine){
-                    changeLineHistory = lines[i]; // その命令を保存
-                }else{
-                    if(lines[i] !== changeLineHistory){
-                        // 長方形の位置を変更
-                        this.layerView.rectangleArray[2*layerArrayIndex].y = y;
-                        this.layerView.rectangleArray[2*layerArrayIndex+1].y = y;
-                    }
-                }
-
-                y += lineHeight;
-                layerArrayIndex++;
-            }else{
-                y += lineHeight;
-            }
-        }
-    }*/
 }

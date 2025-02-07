@@ -35,13 +35,6 @@ export class FileDirMonitor {
         });
         const watcher = vscode.workspace.createFileSystemWatcher('**/*');
         // ファイルやディレクトリが変更されたとき
-        /*watcher.onDidChange(async (uri: vscode.Uri) => {
-            console.log(`変更されたファイル: ${uri.fsPath}`);
-            // ここで初期ファイル内容リストの該当ファイル内容と比較
-            await this.handleFileChange(uri.fsPath);
-            console.log("変更リスト : " + this.changes);
-            this.setFileDirChange(drawer, dockerParser);
-        });*/
         // 新しいファイルやディレクトリが作成されたとき
         watcher.onDidCreate(async (uri: vscode.Uri) => {
             if(dockerParser.normalEndFlag){
@@ -151,7 +144,6 @@ export class FileDirMonitor {
         const changePaths: string[] = [];
 
         if (this.changes.length === 0) {
-            //console.log('ファイルorディレクトリは初期状態です');
             // 全ての色を消した後
             // drawer.dfilei以降を塗る(ただしdrawer.dfileiはcomponentArrayの長さ未満でないといけない)
             // drawer.fileDiriをcomponentArrayの長さに更新

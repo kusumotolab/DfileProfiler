@@ -100,7 +100,6 @@ export class LayerView {
         </body>
         </html>`;
     
-        //console.log(htmlStr);
         this.webview.html = htmlStr;
 
         // デバッグ用
