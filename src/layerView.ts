@@ -1,8 +1,6 @@
 import * as vscode from 'vscode';
 import { LayerViewComponent } from './layerViewComponent';
 import { State } from './state';
-import { Drawer } from './drawer';
-import * as fs from 'fs';
 
 export class LayerView {
     // プロパティ
