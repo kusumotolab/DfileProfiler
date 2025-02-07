@@ -6,39 +6,33 @@ import { FileDirMonitor } from './fileDirMonitor';
 import { DfileMonitor } from './dfileMonitor';
 import { SidebarProvider } from './sidebarProvider';
 
-var editor : any;
-var layerView : LayerView;
+var editor: any;
+var layerView: LayerView;
 var stateArray = new Array();
-
 let panel: vscode.WebviewPanel | undefined = undefined;
 
 export class Control {
 
-    // コンストラクタ
     constructor(context: vscode.ExtensionContext) {
         // スライドバーの生成
         const sidebarProvider = new SidebarProvider(context, this);
     }
 
-    run(context: vscode.ExtensionContext, comment: string){
-
-        if(editor !== undefined && stateArray.length > 0){
-            console.log('前回のビルド履歴あり');
+    run(context: vscode.ExtensionContext, comment: string) {
+        if (editor !== undefined && stateArray.length > 0) {
             // 前回ビルド時の描画状態を取得する
-            const preLayerView = stateArray[stateArray.length-1].layerView;
+            const preLayerView = stateArray[stateArray.length - 1].layerView;
             // テキストエディタのハイライトを全て消す
-            for(let i = 0; i < preLayerView.componentArray.length; i++){
+            for (let i = 0; i < preLayerView.componentArray.length; i++) {
                 this.clearHighlight(preLayerView, i);
             };
             panel?.dispose(); // 既存のWebViewがあれば消す
-        }else{
-            console.log('初めてのビルド')
+        } else {
             // アクティブなエディタを取得
             editor = vscode.window.activeTextEditor;
-            if(!editor){
+            if (!editor) {
                 vscode.window.showErrorMessage('Tool Launch Error! : Please click the "DfileProfiler" button after selecting the Dockerfile.');
             }
-            console.log('editor:' , editor);
             panel?.dispose(); // 既存のWebViewがあれば消す
         }
         // WebViewを作成
@@ -49,7 +43,6 @@ export class Control {
             { enableScripts: true }
         );
         const extensionUri = context.extensionUri;
-        console.log('stateArrayの長さ = ' + stateArray.length);
         layerView = new LayerView(panel.webview, extensionUri, stateArray, comment);
 
         // 初期メッセージを表示
@@ -86,7 +79,6 @@ export class Control {
             message => {
                 switch (message.command) {
                     case 'scrollToLine':
-                        console.log('レイヤー[' + message.index + ']が選択されました');
                         this.scrollToLine(layerView.componentArray[message.index].lineNum);
                         return;
                     case 'highlight':
@@ -96,12 +88,11 @@ export class Control {
                         this.clearHighlight(layerView, message.index);
                         return;
                     case 'radioSelected':
-                        drawer.setDiffInfo(stateArray, 1.4, (layerView.radioCnt-1) - message.index);
+                        drawer.setDiffInfo(stateArray, 1.4, (layerView.radioCnt - 1) - message.index);
                         layerView.setComponentsScript();
                         layerView.radioIndex = message.index;
                         layerView.setCanvasScript(true);
                         layerView.setHtml();
-                        console.log('ラジオボタン[' + message.index + ']が選択されました');
                 }
             },
             undefined,
@@ -111,16 +102,13 @@ export class Control {
 
     // 該当の行までエディタ側のテキストをスクロールさせる関数
     scrollToLine(lineNum: number) {
-        console.log('行番号 ' + lineNum + ' にジャンプ');
         const range = editor.document.lineAt(lineNum).range;
         editor.revealRange(range, vscode.TextEditorRevealType.AtTop);
     }
 
     // テキストにハイライトをつける関数
-    highlightText(layerView:LayerView, index:number){
-        
-        if(!layerView.componentArray[index].decorationFlag){
-            console.log('レイヤー ' + index + ' のハイライトON');
+    highlightText(layerView: LayerView, index: number) {
+        if (!layerView.componentArray[index].decorationFlag) {
             // ハイライトの開始位置を指定
             const startLineNum = layerView.componentArray[index].lineNum;
             const startPos = new vscode.Position(startLineNum, 0);
@@ -131,16 +119,16 @@ export class Control {
             次のレイヤーがある場合 → 次のレイヤーの先頭行の直前
             次のレイヤーがない場合 → エディタの末尾まで
             */
-            let endLineNum = (index+1 < layerView.componentArray.length)? layerView.componentArray[index+1].lineNum-1 : document.lineCount - 1;
+            let endLineNum = (index + 1 < layerView.componentArray.length) ? layerView.componentArray[index + 1].lineNum - 1 : document.lineCount - 1;
             let endPos = new vscode.Position(endLineNum, document.lineAt(endLineNum).text.length);
             for (let i = startLineNum; i <= endLineNum; i++) {
                 // 空白行がある場合 → その直前を終了位置に変更
                 if (document.lineAt(i).text.trim() === '') {
-                    endPos = new vscode.Position(i-1, document.lineAt(i-1).text.length);
+                    endPos = new vscode.Position(i - 1, document.lineAt(i - 1).text.length);
                     break;
                 }
             }
-        
+
             const range = new vscode.Range(startPos, endPos);
             layerView.componentArray[index].decoration = vscode.window.createTextEditorDecorationType({ backgroundColor: 'rgba(255,255,0,0.3)' });
             editor.setDecorations(layerView.componentArray[index].decoration, [range]);
@@ -149,36 +137,30 @@ export class Control {
     }
 
     // テキストのハイライトを消す関数
-    clearHighlight(layerView:LayerView, index:number){
-        if(layerView.componentArray[index].decorationFlag){
-            console.log('レイヤー ' + index + ' のハイライトOFF');
+    clearHighlight(layerView: LayerView, index: number) {
+        if (layerView.componentArray[index].decorationFlag) {
             editor.setDecorations(layerView.componentArray[index].decoration, []);
             layerView.componentArray[index].decorationFlag = false;
         }
     }
 
     // フォーカス処理をする関数
-    handleFocus(dfileMonitor:DfileMonitor, dockerParser:DockerParser, panel:vscode.WebviewPanel){
+    handleFocus(dfileMonitor: DfileMonitor, dockerParser: DockerParser, panel: vscode.WebviewPanel) {
         // アクティブエディタの変更を検出
         vscode.window.onDidChangeActiveTextEditor((tmpEditor) => {
-            console.log("エディタ変更を検出");
             if (tmpEditor) { // ファイルにフォーカスしたとき
-
-                if(tmpEditor?.document.getText() == editor.document.getText()){ // Dfileにフォーカスしたとき
-                    console.log("Dfileにフォーカス");
+                if (tmpEditor?.document.getText() == editor.document.getText()) { // Dfileにフォーカスしたとき
                     dfileMonitor.dfileActiveFlag = true;
                     editor = vscode.window.activeTextEditor;
-                }else{ // Dfile以外のファイルにフォーカスしたとき
-                    console.log("Dfile以外のファイルにフォーカス");
+                } else { // Dfile以外のファイルにフォーカスしたとき
                     dfileMonitor.dfileActiveFlag = false;
                     // Dfileと異なるエディタグループで、フォーカスされているファイルのタブを取得
-                    let targetTab = vscode.window.tabGroups.activeTabGroup.tabs.find(tab => 
+                    let targetTab = vscode.window.tabGroups.activeTabGroup.tabs.find(tab =>
                         tab.input instanceof vscode.TabInputText &&
                         tab.input.uri.toString() === tmpEditor.document.uri.toString() &&
                         tmpEditor.viewColumn !== editor.viewColumn
                     );
                     if (targetTab) {
-                        console.log("ファイルを閉じて元のDfile側にファイルを表示")
                         // タブを閉じる
                         vscode.window.tabGroups.close(targetTab);
                         // Dfileと同じグループでファイルを開く
@@ -191,4 +173,5 @@ export class Control {
             }
         });
     }
+
 }

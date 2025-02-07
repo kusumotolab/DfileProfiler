@@ -18,13 +18,13 @@
       }
     ],
     "views": {
-        "explorer": [
-            {
-                "type": "webview",
-                "id": "extension.sidebar",
-                "name": "Build"
-            }
-        ]
+      "explorer": [
+        {
+          "type": "webview",
+          "id": "extension.sidebar",
+          "name": "Build"
+        }
+      ]
     },
     "menus": {
       "editor/title": [
@@ -61,7 +61,6 @@
     "webpack-cli": "^5.1.4"
   },
   "dependencies": {
-    "chokidar": "^3.6.0",
-    "prettydiff": "^101.2.6"
+    "chokidar": "^3.6.0"
   }
 }

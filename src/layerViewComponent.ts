@@ -1,23 +1,21 @@
 import { Rectangle } from "./rectangle";
 
 export class LayerViewComponent {
-    // プロパティ
-    index : number;
-    instruction : string;
-    lineNum : number;
-    size : number;
-    convertedSize : string;
-    buildTime : string;
-    sizeRectangle : Rectangle;
-    buildTimeRectangle : Rectangle;
-    sizeDiffRectangle : Rectangle | undefined;
-    buildTimeDiffRectangle : Rectangle | undefined;
-    rebuildFlag :boolean;
 
-    decoration : any;
-    decorationFlag : boolean;
+    index: number;
+    instruction: string;
+    lineNum: number;
+    size: number;
+    convertedSize: string;
+    buildTime: string;
+    sizeRectangle: Rectangle;
+    buildTimeRectangle: Rectangle;
+    sizeDiffRectangle: Rectangle | undefined;
+    buildTimeDiffRectangle: Rectangle | undefined;
+    rebuildFlag: boolean;
+    decoration: any;
+    decorationFlag: boolean;
 
-    // コンストラクタ
     constructor(index: number, instruction: string, lineNum: number, size: number, buildTime: string, sizeRectangle: Rectangle, buildTimeRectangle: Rectangle) {
         this.index = index;
         this.instruction = instruction;
@@ -32,7 +30,7 @@ export class LayerViewComponent {
     }
 
     // サイズの単位変換を行う関数
-    convertUnit(size:number) : string{
+    convertUnit(size: number): string {
         const kb = 1000;
         const mb = Math.pow(kb, 2);
         const gb = Math.pow(kb, 3);
@@ -59,4 +57,5 @@ export class LayerViewComponent {
         const result = size < 0 ? -tmpResult : tmpResult;
         return (result + unit);
     }
+    
 }

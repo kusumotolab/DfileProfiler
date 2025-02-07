@@ -2,9 +2,9 @@ import * as vscode from 'vscode';
 import { Control } from './control';
 
 export class SidebarProvider implements vscode.WebviewViewProvider {
-    public static readonly viewType = 'extension.sidebar';
 
-    control : Control;
+    public static readonly viewType = 'extension.sidebar';
+    control: Control;
 
     constructor(private readonly context: vscode.ExtensionContext, control: Control) {
         vscode.commands.executeCommand('workbench.view.extension.sidebarView');
@@ -22,7 +22,6 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
         webviewView.webview.onDidReceiveMessage((comment) => {
             switch (comment.command) {
                 case 'comment':
-                    console.log(comment.text);
                     // ビルド以降の制御を開始
                     this.control.run(this.context, comment.text);
                     return;
@@ -80,4 +79,5 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
             </html>
         `;
     }
+
 }

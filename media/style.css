@@ -1,34 +1,35 @@
 body {
-    background-color: white;
-    color: black;
-    display: flex;
-    justify-content: start;
-    align-items: start;
-    height: 100vh;
-    white-space: normal; /* テキストを折り返す */
+  background-color: white;
+  color: black;
+  display: flex;
+  justify-content: start;
+  align-items: start;
+  height: 100vh;
+  white-space: normal;
 }
 
 .canvas-wrapper {
-    position: relative;
+  position: relative;
 }
 
 .canvas-wrapper canvas {
-    position: absolute;
-    top: 0;
-    left: 0;
-    border: 1px solid black;
-    z-index: 1;
+  position: absolute;
+  top: 0;
+  left: 0;
+  border: 1px solid black;
+  z-index: 1;
 }
 
 .tab-button {
   position: relative;
-  width: 70px; /* 固定幅 */
+  width: 70px;
   background-color: transparent;
   color: grey;
-  padding: 3px 8px; /* タブボタンの左右のパディングを広げて調整 */
+  padding: 3px 8px;
   cursor: pointer;
   margin-right: 5px;
-  margin-bottom: -1.5px; /* タブとキャンバスの枠線を繋げるため */
+  /* タブとキャンバスの枠線を繋げる */
+  margin-bottom: -1.5px;
   border-top: 1px solid grey;
   border-left: 1px solid grey;
   border-right: 1px solid grey;
@@ -46,18 +47,19 @@ body {
 }
 
 .radio-group {
-  position: absolute; /* Canvas 上にラジオボタンを配置 */
+  position: absolute;
   display: none;
-  gap: 10px; /* ラジオボタン間のスペース */
-  margin-top: 20px; /* 上部とのスペース */
-  left: 50px; /* Canvas内での位置調整 */
-  z-index: 10; /* Canvasより前面に配置 */
+  gap: 10px;
+  margin-top: 20px;
+  left: 50px;
+  /* キャンバスより前面に配置 */
+  z-index: 10;
 }
 
 input[type="radio"] {
-  width: 15px; /* サイズ指定 */
-  height: 15px; /* サイズ指定 */
-  cursor: pointer; /* マウスオーバー時にポインタを表示 */
+  width: 15px;
+  height: 15px;
+  cursor: pointer;
   transition: transform 0.2s, background-color 0.3s ease;
 }
 
@@ -66,20 +68,23 @@ button {
 }
 
 #container {
-    transform-origin: 0 0;
+  transform-origin: 0 0;
 }
 
-#tab-relFig, #tab-diffFig, .canvas-wrapper {
-    display: none;
+#tab-relFig,
+#tab-diffFig,
+.canvas-wrapper {
+  display: none;
 }
 
 #tooltip {
   position: absolute;
-  background-color: #ffffcc;;
+  background-color: #ffffcc;
   color: black;
   border: 1px solid black;
   padding: 5px;
-  border-radius: 4px; /* 角を少し丸める */
+  /* 角を少し丸める */
+  border-radius: 4px;
   visibility: hidden;
   font-size: 15px;
   white-space: nowrap;

@@ -3,9 +3,9 @@ import { LayerViewComponent } from './layerViewComponent';
 import { State } from './state';
 
 export class LayerView {
-    // プロパティ
-    webview:vscode.Webview;
-    extensionUri:vscode.Uri;
+
+    webview: vscode.Webview;
+    extensionUri: vscode.Uri;
     header1 = '';
     header2 = '';
     loading = `var gif = document.getElementById('loading');
@@ -13,16 +13,15 @@ export class LayerView {
     resizeScript = '';
     canvasScript = '';
     componentsScript = '';
-    componentArray : LayerViewComponent[];
-    totalComponent : LayerViewComponent | undefined;
-    stateArray : State[];
+    componentArray: LayerViewComponent[];
+    totalComponent: LayerViewComponent | undefined;
+    stateArray: State[];
     radioIndex = 0;
     radioCnt = 0;
-    comment : string;
-    commentArray : string[];
+    comment: string;
+    commentArray: string[];
 
-    // コンストラクタ
-    constructor(webview:vscode.Webview, extensionUri:vscode.Uri, stateArray:State[], comment:string) {
+    constructor(webview: vscode.Webview, extensionUri: vscode.Uri, stateArray: State[], comment: string) {
         this.webview = webview;
         this.extensionUri = extensionUri;
         this.stateArray = stateArray;
@@ -31,10 +30,10 @@ export class LayerView {
         this.commentArray = new Array();
     }
 
-    setHtml(){
+    setHtml() {
         // cssのパスを指定
         const styleUri = this.webview.asWebviewUri(vscode.Uri.joinPath(this.extensionUri, 'media', 'style.css'));
-    
+
         let htmlStr = `<!DOCTYPE html>
         <html lang="en">
         <head>
@@ -87,7 +86,7 @@ export class LayerView {
                         logDiv.innerHTML = '';
                     } else if (message.type === 'close') {
                         logDiv.innerHTML += '<p style="color: red">Build Error!</p>';
-                        logDiv.scrollTop = logDiv.scrollHeight; // // ビルドエラー時もスクロール
+                        logDiv.scrollTop = logDiv.scrollHeight; // ビルドエラー時もスクロール
                         var gif = document.getElementById('loading');
                         gif.style.display = 'none'; // GIFを非表示
                     }
@@ -97,28 +96,28 @@ export class LayerView {
             <h2>${this.header2}</h2>
         </body>
         </html>`;
-    
+
         this.webview.html = htmlStr;
 
         // デバッグ用
-        /*const filePath: string = "./output.txt";
+        /* const filePath: string = "./output.txt";
         try {
             fs.writeFileSync(filePath, this.webview.html);
             console.log("ファイルが正常に書き込まれました:", filePath);
         }catch(e){
             console.error("ファイルの書き込み中にエラーが発生しました:", e);
-        }*/
+        } */
 
     }
 
     // canvasScript中のcomponentsを記述する関数
-    setComponentsScript(){
+    setComponentsScript() {
         let tmpComponentsScript = 'const totalComponent = \n'
             + '{ size:' + '\'' + this.totalComponent?.convertedSize + '\''
             + ', sizeRectangle: { x: ' + this.totalComponent?.sizeRectangle.x
             + ', y: ' + this.totalComponent?.sizeRectangle.y
             + ', width: ' + this.totalComponent?.sizeRectangle.width
-            + ', height: ' + this.totalComponent?.sizeRectangle.height 
+            + ', height: ' + this.totalComponent?.sizeRectangle.height
             + ', info: ' + '\'' + this.totalComponent?.sizeRectangle.info + '\''
             + ', color: ' + '\'' + this.totalComponent?.sizeRectangle.color + '\''
             + ' }'
@@ -126,18 +125,18 @@ export class LayerView {
             + ', buildTimeRectangle: { x: ' + this.totalComponent?.buildTimeRectangle.x
             + ', y: ' + this.totalComponent?.buildTimeRectangle.y
             + ', width: ' + this.totalComponent?.buildTimeRectangle.width
-            + ', height: ' + this.totalComponent?.buildTimeRectangle.height 
-            + ', info: ' +  '\'' + this.totalComponent?.buildTimeRectangle.info + '\''
-            + ', color: ' + '\'' + this.totalComponent?.buildTimeRectangle.color + '\'' 
+            + ', height: ' + this.totalComponent?.buildTimeRectangle.height
+            + ', info: ' + '\'' + this.totalComponent?.buildTimeRectangle.info + '\''
+            + ', color: ' + '\'' + this.totalComponent?.buildTimeRectangle.color + '\''
             + ' }'
             + ' };\n';
 
         tmpComponentsScript += 'const rowBackGrounds = [\n';
         this.componentArray.forEach(component => {
             tmpComponentsScript += ('{ x: ' + 0
-                + ', y: ' + (component.sizeRectangle.y-7/2) // 7 => drawerのlineSpaceと一致させること!
+                + ', y: ' + (component.sizeRectangle.y - 7 / 2) // 7 => drawerのlineSpaceと一致させること!
                 + ', width: canvasCommon.width'
-                + ', height: ' + (component.sizeRectangle.height+7) // 7 => drawerのlineSpaceと一致させること!
+                + ', height: ' + (component.sizeRectangle.height + 7) // 7 => drawerのlineSpaceと一致させること!
                 + ', color: ' + (component.index % 2 === 0 ? '\'whitesmoke\'' : '\'white\'') // グレーと白の交互
                 + ' },\n');
         });
@@ -153,17 +152,17 @@ export class LayerView {
                 + ', sizeRectangle: { x: ' + component.sizeRectangle.x
                 + ', y: ' + component.sizeRectangle.y
                 + ', width: ' + component.sizeRectangle.width
-                + ', height: ' + component.sizeRectangle.height 
+                + ', height: ' + component.sizeRectangle.height
                 + ', info: ' + '\'' + component.sizeRectangle.info + '\''
-                + ', color: ' + '\'' + component.sizeRectangle.color + '\'' 
+                + ', color: ' + '\'' + component.sizeRectangle.color + '\''
                 + ' }'
                 + ', buildTime: ' + '\'' + component.buildTime + '\''
                 + ', buildTimeRectangle: { x: ' + component.buildTimeRectangle.x
                 + ', y: ' + component.buildTimeRectangle.y
                 + ', width: ' + component.buildTimeRectangle.width
-                + ', height: ' + component.buildTimeRectangle.height 
+                + ', height: ' + component.buildTimeRectangle.height
                 + ', info: ' + '\'' + component.buildTimeRectangle.info + '\''
-                + ', color: ' + '\'' + component.buildTimeRectangle.color + '\'' 
+                + ', color: ' + '\'' + component.buildTimeRectangle.color + '\''
                 + ' }'
                 + ', rebuildFlag: ' + component.rebuildFlag
                 + ' },\n');
@@ -172,7 +171,7 @@ export class LayerView {
         this.componentsScript += '];\n';
 
         this.componentsScript += 'const diffComponents = [\n';
-        if(this.stateArray.length > 0){
+        if (this.stateArray.length > 0) {
 
             this.componentsScript += ('{ x: ' + this.totalComponent?.sizeDiffRectangle?.x
                 + ', y: ' + this.totalComponent?.sizeDiffRectangle?.y
@@ -187,22 +186,22 @@ export class LayerView {
                 + ', height: ' + this.totalComponent?.buildTimeDiffRectangle?.height
                 + ', color: ' + '\'' + this.totalComponent?.buildTimeDiffRectangle?.color + '\''
                 + ' },\n');
-            
-            for(let i = 0; i < this.componentArray.length; i++){
-                if(this.componentArray[i].sizeDiffRectangle !== undefined){
-                this.componentsScript += ('{ x: ' + this.componentArray[i].sizeDiffRectangle?.x
+
+            for (let i = 0; i < this.componentArray.length; i++) {
+                if (this.componentArray[i].sizeDiffRectangle !== undefined) {
+                    this.componentsScript += ('{ x: ' + this.componentArray[i].sizeDiffRectangle?.x
                         + ', y: ' + this.componentArray[i].sizeDiffRectangle?.y
                         + ', width: ' + this.componentArray[i].sizeDiffRectangle?.width
                         + ', height: ' + this.componentArray[i].sizeDiffRectangle?.height
                         + ', color: ' + '\'' + this.componentArray[i].sizeDiffRectangle?.color + '\''
                         + ' },\n');
                 }
-                if(this.componentArray[i].buildTimeDiffRectangle !== undefined){
+                if (this.componentArray[i].buildTimeDiffRectangle !== undefined) {
                     this.componentsScript += ('{ x: ' + this.componentArray[i].buildTimeDiffRectangle?.x
                         + ', y: ' + this.componentArray[i].buildTimeDiffRectangle?.y
                         + ', width: ' + this.componentArray[i].buildTimeDiffRectangle?.width
                         + ', height: ' + this.componentArray[i].buildTimeDiffRectangle?.height
-                        + ', color: ' + '\''+ this.componentArray[i].buildTimeDiffRectangle?.color + '\''
+                        + ', color: ' + '\'' + this.componentArray[i].buildTimeDiffRectangle?.color + '\''
                         + ' },\n');
                 }
             }
@@ -211,7 +210,7 @@ export class LayerView {
         this.componentsScript += '];\n';
 
         this.componentsScript += 'const commentArray = [\n';
-        if(this.commentArray.length > 0){
+        if (this.commentArray.length > 0) {
             this.commentArray.forEach(comment => {
                 this.componentsScript += ('\`' + comment + '\`' + ',\n');
             });
@@ -221,7 +220,7 @@ export class LayerView {
     }
 
     // canvasScriptを記述する関数
-    setCanvasScript(byRadioSet:boolean){
+    setCanvasScript(byRadioSet: boolean) {
         this.canvasScript = `
             // ログエリアの高さをリセットして空白を削除
             logDiv.style.height = '0';
@@ -392,15 +391,15 @@ export class LayerView {
                     rightButton.disabled = (selectedIndex === radioButtonCount - 1);
                 }
                 `
-            
-            if(byRadioSet){ // ラジオボタンからの呼び出しの場合
-                this.canvasScript += `
+
+        if (byRadioSet) { // ラジオボタンからの呼び出しの場合
+            this.canvasScript += `
                 radioContainer.children[${this.radioIndex}+1].checked = true;
                 tabDiffFig.click();
                 updateNavigationButtons();`
-            }
+        }
 
-            this.canvasScript += `
+        this.canvasScript += `
             }
 
             // トータルレイヤーのキャプションを描画
@@ -542,35 +541,6 @@ export class LayerView {
                 }
 
                 let isInside = false;
-                /*if (x >= totalComponent.sizeRectangle.x && x <= totalComponent.sizeRectangle.x + totalComponent.sizeRectangle.width && y >= totalComponent.sizeRectangle.y && y <= totalComponent.sizeRectangle.y + totalComponent.sizeRectangle.height) {
-                    isInside = true;
-                    tooltip.innerText = totalComponent.sizeRectangle.info;
-                    tooltip.style.left = (event.pageX + 8) + 'px';
-                    tooltip.style.top = (event.pageY + 8) + 'px';
-                    tooltip.style.visibility = 'visible';
-                }else if (x >= totalComponent.buildTimeRectangle.x && x <= totalComponent.buildTimeRectangle.x + totalComponent.sizeRectangle.width && y >= totalComponent.buildTimeRectangle.y && y <= totalComponent.buildTimeRectangle.y + totalComponent.buildTimeRectangle.height) {
-                    isInside = true;
-                    tooltip.innerText = totalComponent.buildTimeRectangle.info;
-                    tooltip.style.left = (event.pageX + 8) + 'px';
-                    tooltip.style.top = (event.pageY + 8) + 'px';
-                    tooltip.style.visibility = 'visible';
-                }
-                components.forEach(component => {
-                    if (x >= component.sizeRectangle.x && x <= component.sizeRectangle.x + totalComponent.sizeRectangle.width && y >= component.sizeRectangle.y && y <= component.sizeRectangle.y + component.sizeRectangle.height) {
-                        isInside = true;
-                        tooltip.innerText = component.sizeRectangle.info;
-                        tooltip.style.left = (event.pageX + 8) + 'px';
-                        tooltip.style.top = (event.pageY + 8) + 'px';
-                        tooltip.style.visibility = 'visible';
-                    }else if (x >= component.buildTimeRectangle.x && x <= component.buildTimeRectangle.x + totalComponent.sizeRectangle.width && y >= component.buildTimeRectangle.y && y <= component.buildTimeRectangle.y + component.buildTimeRectangle.height) {
-                        isInside = true;
-                        tooltip.innerText = component.buildTimeRectangle.info;
-                        tooltip.style.left = (event.pageX + 8) + 'px';
-                        tooltip.style.top = (event.pageY + 8) + 'px';
-                        tooltip.style.visibility = 'visible';
-                    }
-                });*/
-
                 if (!isInside) {
                     tooltip.style.visibility = 'hidden';
                 }
@@ -592,4 +562,5 @@ export class LayerView {
                 });
             });`;
     }
+
 }

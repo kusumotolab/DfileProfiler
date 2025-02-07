@@ -3,12 +3,11 @@ import { DockerParser } from "./dockerParser";
 import { Drawer } from "./drawer";
 
 export class DfileMonitor {
-    // プロパティ
+
     editor : vscode.TextEditor;
     originalTextGroup : string[];
     dfileActiveFlag : boolean;
 
-    // コンストラクタ
     constructor(editor : vscode.TextEditor) {
         this.editor = editor;
         this.originalTextGroup = new Array();
@@ -17,7 +16,6 @@ export class DfileMonitor {
 
     // dfileテキストの構文解析を行う関数
     textparse(editorText:string) : string[]{
-
         let textGroup = new Array();
 
         const layerKeywords = ['RUN', 'ADD', 'COPY', 'WORKDIR'];
@@ -25,18 +23,14 @@ export class DfileMonitor {
                                     'EXPOSE', 'ENV', 'ENTRYPOINT', 'VOLUME', 'USER', 'ARG', 'ONBUILD', 
                                     'STOPSIGNAL', 'HEALTHCHECK', 'SHELL'];
 
-        console.log(editorText);
-
         // FROMの処理
-        console.log('抽出文字列 = ' + editorText.slice(editorText.indexOf('FROM'), editorText.indexOf('\n', editorText.indexOf('FROM')+1)));
         textGroup.push(editorText.slice(editorText.indexOf('FROM'), editorText.indexOf('\n', editorText.indexOf('FROM')+1)));
 
         // コメント行を空白行に置換
         const tmpProcessedEditorText = editorText.replace(/\#.*\r?\n/g, '\n');
 
         // 改行文字を削除しない
-        const processedEditorText = tmpProcessedEditorText;//.replace(/\r/g,''); //.replace(/\r?\n|\r/g,'');
-        console.log('加工後 = ' + processedEditorText);
+        const processedEditorText = tmpProcessedEditorText;
         
         let searchStartPos = 0; // 検索の開始位置
         while(searchStartPos < processedEditorText.length){
@@ -67,11 +61,9 @@ export class DfileMonitor {
                 slicedStr = processedEditorText.slice(sliceStartPos, sliceEndPos+1);
                 searchStartPos = sliceEndPos + 1;
                 textGroup.push(slicedStr);
-                console.log('抽出文字列 = ' + slicedStr);
             }else{
                 slicedStr = processedEditorText.slice(sliceStartPos);
                 textGroup.push(slicedStr);
-                console.log('抽出文字列 = ' + slicedStr);
                 break;
             }
         }
@@ -90,16 +82,12 @@ export class DfileMonitor {
                 const lineText = this.editor.document.lineAt(startLine).text;
                 const firstChar = lineText.charAt(0);
                 if(changeText.includes('\n') && (endLine - startLine) === 0){
-                    console.log('開始行番号の先頭文字 = ' + firstChar);
                     if(firstChar === ''){
-                        console.log('行番号 ' + startLine + ' 以下の各レイヤーの先頭行を1増やす');
                         drawer.changeLineNum(startLine, 1);
                     }else{
-                        console.log('行番号 ' + (startLine+1) + ' 以下の各レイヤーの先頭行を1増やす');
                         drawer.changeLineNum(startLine+1, 1);
                     }
                 }else if((endLine - startLine) > 0){
-                    console.log('行番号 ' + endLine + ' 以下の各レイヤーの先頭行を1減らす');
                     drawer.changeLineNum(endLine, -1);
                 }
 
@@ -110,7 +98,6 @@ export class DfileMonitor {
 
     // dfileの変更をビューに反映する関数
     setdfileChange(drawer:Drawer, dockerParser:DockerParser){
-
         const document = this.editor.document;
         const text = document.getText().replace(/\#.*\r?\n/g, '\n');
 
@@ -123,9 +110,6 @@ export class DfileMonitor {
             let processedOriginalText = this.originalTextGroup[i].replace(/\r?\n|\r/g,'');
             let processedNewText = newTextGroup[i].replace(/\r?\n|\r/g,'');
             if(processedNewText !== processedOriginalText){ // ビルド時のdfileとの差分がある場合
-                console.log('前 = ' + processedOriginalText);
-                console.log('後 = ' + processedNewText);
-                console.log('該当レイヤーはインデックス ' + i + ' : dfilei = ' + drawer.dfileChangeLayeri + ' : fileDiri = ' + drawer.fileDirChangeLayeri);
                 // index=iを取得
                 // このiがdrawer.dfilei以上→0～i-1を消してi以降を塗る+drawer.dfileiを更新
                 // このiがdrawer.dfileiより小さい→i以降を塗る+drawer.dfileiを更新
@@ -143,10 +127,7 @@ export class DfileMonitor {
 
                 const index = text.indexOf(newTextGroup[i]);
                 if(index !== -1){
-                    console.log('index = ' + index);
-                    console.log(text[index]);
                     const lineNum = (text.slice(0, index).match(/\n/g) || []).length + 1;
-                    console.log('該当行 = ' + lineNum);
                 }
                 return;
             }
@@ -161,4 +142,5 @@ export class DfileMonitor {
         }
         drawer.dfileChangeLayeri = dockerParser.layerArray.length;
     }
+    
 }
