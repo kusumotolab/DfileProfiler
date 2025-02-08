@@ -289,9 +289,9 @@ export class Drawer {
     changeCacheIcon(startLayerArrayIndex: number, endLayerArrayIndex: number, flag: boolean) {
         for (let i = startLayerArrayIndex; i <= endLayerArrayIndex; i++) {
             if (flag) {
-                this.layerView.componentArray[i].rebuildFlag = true;
+                this.layerView.componentArray[i].isRebuild = true;
             } else {
-                this.layerView.componentArray[i].rebuildFlag = false;
+                this.layerView.componentArray[i].isRebuild = false;
             }
         }
         this.layerView.setComponentsScript();

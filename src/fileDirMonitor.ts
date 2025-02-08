@@ -21,7 +21,7 @@ export class FileDirMonitor {
     // 外部ファイル・ディレクトリの変更を検知するメソッド
     run(drawer: Drawer, dockerParser: DockerParser) {
         vscode.workspace.onDidChangeTextDocument(async event => {
-            if (dockerParser.normalEndFlag) {
+            if (dockerParser.isNormalEnd) {
                 // ファイルの内容が変更された場合
                 const document = event.document;
                 const newData = document.getText();
@@ -36,7 +36,7 @@ export class FileDirMonitor {
         // 外部ファイル・ディレクトリが変更された場合
         // 新しいファイル・ディレクトリが作成された場合
         watcher.onDidCreate(async (uri: vscode.Uri) => {
-            if (dockerParser.normalEndFlag) {
+            if (dockerParser.isNormalEnd) {
                 if (this.initialStructure.includes(uri.fsPath)) {
                     // ビルド時点で存在した外部ファイル・ディレクトリを削除後に追加した場合、変更リストから削除
                     await this.deleteToChanges(uri.fsPath);
@@ -50,7 +50,7 @@ export class FileDirMonitor {
 
         // 外部ファイル・ディレクトリが削除された場合
         watcher.onDidDelete(async (uri: vscode.Uri) => {
-            if (dockerParser.normalEndFlag) {
+            if (dockerParser.isNormalEnd) {
                 if (this.initialStructure.includes(uri.fsPath)) {
                     // ビルド時点で存在した外部ファイル・ディレクトリを削除した場合、該当ファイル・ディレクトリを全て変更リストに追加
                     this.initialStructure.forEach(path => {

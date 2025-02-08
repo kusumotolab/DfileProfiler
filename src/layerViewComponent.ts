@@ -12,9 +12,9 @@ export class LayerViewComponent {
     buildTimeRectangle: Rectangle;
     sizeDiffRectangle: Rectangle | undefined;
     buildTimeDiffRectangle: Rectangle | undefined;
-    rebuildFlag: boolean; // ビルドキャッシュが効かなくなるか判定するフラグ
+    isRebuild: boolean; // ビルドキャッシュが効かなくなるか判定するフラグ
     decoration: any; // 対応するDfile行のハイライト情報
-    decorationFlag: boolean; // 対応するDfile行がハイライト中か判定するフラグ
+    isDecorated: boolean; // 対応するDfile行がハイライト中か判定するフラグ
 
     constructor(index: number, instruction: string, lineNum: number, size: number, buildTime: string, sizeRectangle: Rectangle, buildTimeRectangle: Rectangle) {
         this.index = index;
@@ -25,8 +25,8 @@ export class LayerViewComponent {
         this.buildTime = buildTime;
         this.sizeRectangle = sizeRectangle;
         this.buildTimeRectangle = buildTimeRectangle;
-        this.rebuildFlag = false;
-        this.decorationFlag = false;
+        this.isRebuild = false;
+        this.isDecorated = false;
     }
 
     // サイズの単位変換を行うメソッド

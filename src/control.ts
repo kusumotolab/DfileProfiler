@@ -108,7 +108,7 @@ export class Control {
 
     // Dfileにハイライトをつけるメソッド
     highlightText(layerView: LayerView, index: number) {
-        if (!layerView.componentArray[index].decorationFlag) {
+        if (!layerView.componentArray[index].isDecorated) {
             // ハイライトの開始位置を指定
             const startLineNum = layerView.componentArray[index].lineNum;
             const startPos = new vscode.Position(startLineNum, 0);
@@ -129,15 +129,15 @@ export class Control {
             const range = new vscode.Range(startPos, endPos);
             layerView.componentArray[index].decoration = vscode.window.createTextEditorDecorationType({ backgroundColor: 'rgba(255,255,0,0.3)' });
             editor.setDecorations(layerView.componentArray[index].decoration, [range]);
-            layerView.componentArray[index].decorationFlag = true;
+            layerView.componentArray[index].isDecorated = true;
         }
     }
 
     // Dfileのハイライトを消すメソッド
     clearHighlight(layerView: LayerView, index: number) {
-        if (layerView.componentArray[index].decorationFlag) {
+        if (layerView.componentArray[index].isDecorated) {
             editor.setDecorations(layerView.componentArray[index].decoration, []);
-            layerView.componentArray[index].decorationFlag = false;
+            layerView.componentArray[index].isDecorated = false;
         }
     }
 
@@ -147,10 +147,10 @@ export class Control {
         vscode.window.onDidChangeActiveTextEditor((tmpEditor) => {
             if (tmpEditor) { // ファイルにフォーカスした場合
                 if (tmpEditor?.document.getText() == editor.document.getText()) { // Dfileにフォーカスした場合
-                    dfileMonitor.dfileActiveFlag = true;
+                    dfileMonitor.isDfileActive = true;
                     editor = vscode.window.activeTextEditor;
                 } else { // Dfile以外のファイルにフォーカスした場合
-                    dfileMonitor.dfileActiveFlag = false;
+                    dfileMonitor.isDfileActive = false;
                     // Dfileと異なるエディタグループで、フォーカスされているファイルのタブを取得
                     let targetTab = vscode.window.tabGroups.activeTabGroup.tabs.find(tab =>
                         tab.input instanceof vscode.TabInputText &&

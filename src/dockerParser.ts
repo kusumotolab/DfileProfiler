@@ -21,7 +21,7 @@ export class DockerParser {
     dfileMonitor: DfileMonitor;
     fileDirMonitor: FileDirMonitor;
     stateArray: State[]; // ビルド結果の履歴
-    normalEndFlag: boolean; // 解析処理が正常終了したか判定するフラグ
+    isNormalEnd: boolean; // 解析処理が正常終了したか判定するフラグ
 
     constructor(editor: vscode.TextEditor, drawer: Drawer, dfileMonitor: DfileMonitor, fileDirMonitor: FileDirMonitor, stateArray: State[]) {
         this.editor = editor;
@@ -30,12 +30,12 @@ export class DockerParser {
         this.dfileMonitor = dfileMonitor;
         this.fileDirMonitor = fileDirMonitor;
         this.stateArray = stateArray;
-        this.normalEndFlag = false;
+        this.isNormalEnd = false;
     }
 
     // ビルド時の解析を行うメソッド
     run(layerView: LayerView) {
-        if (this.dfileMonitor.dfileActiveFlag) {
+        if (this.dfileMonitor.isDfileActive) {
             // Dfileの内容を取得
             const editorText = this.editor.document.getText();
 
@@ -104,7 +104,7 @@ export class DockerParser {
 
                     // ビルド時の描画状態を保存する
                     this.stateArray.push(new State(layerView));
-                    this.normalEndFlag = true;
+                    this.isNormalEnd = true;
                 } else {
                     // ビルドが失敗した場合
                     layerView.webview.postMessage({ type: 'close' });

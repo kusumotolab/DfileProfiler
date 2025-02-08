@@ -166,7 +166,7 @@ export class LayerView {
                 + ', info: ' + '\'' + component.buildTimeRectangle.info + '\''
                 + ', color: ' + '\'' + component.buildTimeRectangle.color + '\''
                 + ' }'
-                + ', rebuildFlag: ' + component.rebuildFlag
+                + ', isRebuild: ' + component.isRebuild
                 + ' },\n');
         });
         this.componentsScript = tmpComponentsScript2.slice(0, -2); // 最後の',\n'を削除
@@ -477,7 +477,7 @@ export class LayerView {
                     ctxDiffFig.fillText(component.buildTimeRectangle.info, x, (component.buildTimeRectangle.y + component.buildTimeRectangle.height/2));
                     x += fontSize*5;
 
-                    if(component.rebuildFlag){
+                    if(component.isRebuild){
                         var img = new Image();
                         // 画像のパスを指定
                         img.src = "${this.webview.asWebviewUri(vscode.Uri.joinPath(this.extensionUri, 'media', 'icon.jpg'))}";
