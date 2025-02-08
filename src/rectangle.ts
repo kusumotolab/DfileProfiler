@@ -6,7 +6,7 @@ export class Rectangle {
     height: number;
     info: string;
     color: string;
-    defColor = 'lightblue'; // 棒グラフのデフォルトカラーを指定(必要に応じて調整)
+    defColor = 'lightblue'; // 棒グラフのデフォルトカラーを指定
 
     constructor(x: number, y: number, width: number, height: number, info: string) {
         this.x = x;

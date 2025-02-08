@@ -7,9 +7,9 @@ import { DockerParser } from './dockerParser';
 export class FileDirMonitor {
 
     editor: vscode.TextEditor;
-    changes: string[];
-    initialStructure: string[];
-    initialFileContents: Map<string, string>;
+    changes: string[]; // 外部ファイル・ディレクトリの変更リスト
+    initialStructure: string[]; // ビルド時点のディレクトリ構造
+    initialFileContents: Map<string, string>; // ビルド時点の外部ファイルの内容
 
     constructor(editor: vscode.TextEditor) {
         this.editor = editor;
@@ -18,10 +18,11 @@ export class FileDirMonitor {
         this.initialFileContents = new Map();
     }
 
+    // 外部ファイル・ディレクトリの変更を検知するメソッド
     run(drawer: Drawer, dockerParser: DockerParser) {
         vscode.workspace.onDidChangeTextDocument(async event => {
             if (dockerParser.normalEndFlag) {
-                // ファイルの内容が変更されたとき
+                // ファイルの内容が変更された場合
                 const document = event.document;
                 const newData = document.getText();
                 const filePath = document.uri.fsPath;
@@ -29,14 +30,15 @@ export class FileDirMonitor {
                 this.setFileDirChange(drawer, dockerParser);
             }
         });
+
         const watcher = vscode.workspace.createFileSystemWatcher('**/*');
-        // ファイルやディレクトリが変更されたとき
-        // 新しいファイルやディレクトリが作成されたとき
+
+        // 外部ファイル・ディレクトリが変更された場合
+        // 新しいファイル・ディレクトリが作成された場合
         watcher.onDidCreate(async (uri: vscode.Uri) => {
             if (dockerParser.normalEndFlag) {
                 if (this.initialStructure.includes(uri.fsPath)) {
-                    // 初期状態で存在したファイルorディレクトリを(削除後に)追加した場合
-                    // 変更リストから削除
+                    // ビルド時点で存在した外部ファイル・ディレクトリを削除後に追加した場合、変更リストから削除
                     await this.deleteToChanges(uri.fsPath);
                 } else {
                     // 変更リストに追加
@@ -45,19 +47,19 @@ export class FileDirMonitor {
                 this.setFileDirChange(drawer, dockerParser);
             }
         });
-        // ファイルやディレクトリが削除されたとき
+
+        // 外部ファイル・ディレクトリが削除された場合
         watcher.onDidDelete(async (uri: vscode.Uri) => {
             if (dockerParser.normalEndFlag) {
                 if (this.initialStructure.includes(uri.fsPath)) {
-                    // 初期状態で存在したファイルorディレクトリを削除した場合
-                    // 該当のファイルorディレクトリ要素を全て変更リストに追加
+                    // ビルド時点で存在した外部ファイル・ディレクトリを削除した場合、該当ファイル・ディレクトリを全て変更リストに追加
                     this.initialStructure.forEach(path => {
                         if (path.startsWith(uri.fsPath)) {
                             this.changes.push(`${uri.fsPath}|deleted`);
                         }
                     });
                 } else {
-                    // 変更リストから該当のファイルorディレクトリ要素を全て削除
+                    // 変更リストから該当ファイル・ディレクトリを全て削除
                     this.changes = this.changes.filter(change => {
                         return !change.startsWith(uri.fsPath);
                     });
@@ -67,6 +69,7 @@ export class FileDirMonitor {
         });
     }
 
+    // ファイル内容の変更を受けて変更リストに反映するメソッド
     handleFileChange(filePath: string, fileContent: string) {
         try {
             const newData = fileContent;
@@ -81,7 +84,7 @@ export class FileDirMonitor {
                     this.changes.push(`${filePath}|modified`);
                 }
             } else {
-                // 元ファイルと一致していれば変更リストから削除する
+                // 元ファイルと一致していれば変更リストから削除
                 const toRemove = [`${filePath}|added`, `${filePath}|deleted`, `${filePath}|modified`];
                 this.changes = this.changes.filter(change => !toRemove.includes(change));
             }
@@ -91,7 +94,7 @@ export class FileDirMonitor {
         }
     }
 
-    // 変更を検知した全ディレクトリorファイルを変更リストに追加する関数
+    // 変更を検知した全ディレクトリ・ファイルを変更リストに追加するメソッド
     async addToChanges(basePath: string, operation: string) {
         const stats = await fs.stat(basePath);
 
@@ -104,13 +107,13 @@ export class FileDirMonitor {
                 await this.addToChanges(fullPath, operation);
             }
         } else if (stats.isFile()) {
-            // ファイルの場合、リストに追加
+            // ファイルの場合、そのまま変更リストに追加
             this.changes.push(`${basePath}|${operation}`);
         }
     }
 
 
-    // 変更を検知した全ディレクトリorファイルを変更リストから削除する関数
+    // 変更を検知した全ディレクトリ・ファイルを変更リストから削除するメソッド
     async deleteToChanges(basePath: string) {
         const stats = await fs.stat(basePath);
 
@@ -129,17 +132,15 @@ export class FileDirMonitor {
         }
     }
 
-    // ファイルorディレクトリの変更をビューに反映する関数
+    // 外部ファイル・ディレクトリの変更をビューに反映するメソッド
     setFileDirChange(drawer: Drawer, dockerParser: DockerParser) {
         const changePaths: string[] = [];
 
         if (this.changes.length === 0) {
-            // 全ての色を消した後
-            // drawer.dfilei以降を塗る(ただしdrawer.dfileiはcomponentArrayの長さ未満でないといけない)
-            // drawer.fileDiriをcomponentArrayの長さに更新
-            drawer.changeRectangleColor(0, dockerParser.layerArray.length - 1, false); // 一度リセット
+            drawer.changeCacheIcon(0, dockerParser.layerArray.length - 1, false); // 一度リセット
             if (drawer.dfileChangeLayeri < dockerParser.layerArray.length) {
-                drawer.changeRectangleColor(drawer.dfileChangeLayeri, dockerParser.layerArray.length - 1, true);
+                // Dfileの編集有無を反映
+                drawer.changeCacheIcon(drawer.dfileChangeLayeri, dockerParser.layerArray.length - 1, true);
             }
             drawer.fileDirChangeLayeri = dockerParser.layerArray.length;
         } else {
@@ -155,14 +156,8 @@ export class FileDirMonitor {
         }
     }
 
-    // ファイル・ディレクトリの変更とキャッシュが効かなくなるレイヤーを対応づける関数
+    // 外部ファイル・ディレクトリの変更とキャッシュが効かなくなるレイヤをマッピングするメソッド
     setFileDirtoLayer(changePaths: string[], drawer: Drawer, dockerParser: DockerParser) {
-        // changeArrayから1つ取り出し
-        // さらにdockerParser.layerArrayから1つ取り出し
-        // changeArrayの要素 ===fileDirならその該当レイヤーiを得る
-        // jとi比べて、小さい方をjにセットしてcontinue（jの初期値はdockerParser.layerArray.length）
-        // 上の2重ループ抜けた後、jで以下のiの処理をする
-
         let minIndex = dockerParser.layerArray.length;
 
         changePaths.forEach(changePath => {
@@ -183,9 +178,9 @@ export class FileDirMonitor {
             } else {
                 endLayerArrayIndex = drawer.dfileChangeLayeri - 1;
             }
-            drawer.changeRectangleColor(0, endLayerArrayIndex, false);
+            drawer.changeCacheIcon(0, endLayerArrayIndex, false);
         }
-        drawer.changeRectangleColor(minIndex, dockerParser.layerArray.length - 1, true);
+        drawer.changeCacheIcon(minIndex, dockerParser.layerArray.length - 1, true);
         drawer.fileDirChangeLayeri = minIndex;
     }
     

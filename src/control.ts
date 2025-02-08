@@ -6,23 +6,24 @@ import { FileDirMonitor } from './fileDirMonitor';
 import { DfileMonitor } from './dfileMonitor';
 import { SidebarProvider } from './sidebarProvider';
 
-var editor: any;
-var layerView: LayerView;
-var stateArray = new Array();
+let editor: any;
+let layerView: LayerView;
+let stateArray = new Array(); // ビルド結果の履歴
 let panel: vscode.WebviewPanel | undefined = undefined;
 
 export class Control {
 
     constructor(context: vscode.ExtensionContext) {
-        // スライドバーの生成
+        // サイドバーの生成
         const sidebarProvider = new SidebarProvider(context, this);
     }
 
+    // ビルド以降の制御を行うメソッド
     run(context: vscode.ExtensionContext, comment: string) {
         if (editor !== undefined && stateArray.length > 0) {
             // 前回ビルド時の描画状態を取得する
             const preLayerView = stateArray[stateArray.length - 1].layerView;
-            // テキストエディタのハイライトを全て消す
+            // Dfileのハイライトをリセット
             for (let i = 0; i < preLayerView.componentArray.length; i++) {
                 this.clearHighlight(preLayerView, i);
             };
@@ -37,13 +38,12 @@ export class Control {
         }
         // WebViewを作成
         panel = vscode.window.createWebviewPanel(
-            'dfileView',
+            'layerView',
             'Layer View',
             vscode.ViewColumn.Beside,
             { enableScripts: true }
         );
-        const extensionUri = context.extensionUri;
-        layerView = new LayerView(panel.webview, extensionUri, stateArray, comment);
+        layerView = new LayerView(panel.webview, context.extensionUri, stateArray, comment);
 
         // 初期メッセージを表示
         const drawer = new Drawer(layerView, stateArray);
@@ -60,7 +60,7 @@ export class Control {
             }
         });
 
-        // dockerの構文解析とレイヤービューの描画を行う
+        // ビルド時の解析とレイヤビューの描画を行う
         dfileMonitor.originalTextGroup = dfileMonitor.textparse(editor.document.getText());
         const dockerParser = new DockerParser(editor, drawer, dfileMonitor, fileDirMonitor, stateArray);
         dockerParser.run(layerView);
@@ -68,13 +68,13 @@ export class Control {
         // フォーカスの切り替えを行う
         this.handleFocus(dfileMonitor, dockerParser, panel);
 
-        // dfileの編集有無の監視を開始
+        // Dfileの編集有無の監視を開始
         dfileMonitor.run(drawer, dockerParser);
 
-        // ファイル・ディレクトリの監視を開始
+        // 外部ファイル・ディレクトリの監視を開始
         fileDirMonitor.run(drawer, dockerParser);
 
-        // WebViewのレイヤー選択とラジオボタン選択を検出
+        // WebViewのレイヤ選択とラジオボタン選択を検出
         panel.webview.onDidReceiveMessage(
             message => {
                 switch (message.command) {
@@ -100,13 +100,13 @@ export class Control {
         );
     }
 
-    // 該当の行までエディタ側のテキストをスクロールさせる関数
+    // 該当の行までDfileをスクロールさせるメソッド
     scrollToLine(lineNum: number) {
         const range = editor.document.lineAt(lineNum).range;
         editor.revealRange(range, vscode.TextEditorRevealType.AtTop);
     }
 
-    // テキストにハイライトをつける関数
+    // Dfileにハイライトをつけるメソッド
     highlightText(layerView: LayerView, index: number) {
         if (!layerView.componentArray[index].decorationFlag) {
             // ハイライトの開始位置を指定
@@ -115,14 +115,11 @@ export class Control {
 
             const document = editor.document;
 
-            /* ハイライトの終了位置を指定
-            次のレイヤーがある場合 → 次のレイヤーの先頭行の直前
-            次のレイヤーがない場合 → エディタの末尾まで
-            */
+            // ハイライトの終了位置を指定
             let endLineNum = (index + 1 < layerView.componentArray.length) ? layerView.componentArray[index + 1].lineNum - 1 : document.lineCount - 1;
             let endPos = new vscode.Position(endLineNum, document.lineAt(endLineNum).text.length);
             for (let i = startLineNum; i <= endLineNum; i++) {
-                // 空白行がある場合 → その直前を終了位置に変更
+                // 空白行がある場合、その直前を終了位置に変更
                 if (document.lineAt(i).text.trim() === '') {
                     endPos = new vscode.Position(i - 1, document.lineAt(i - 1).text.length);
                     break;
@@ -136,7 +133,7 @@ export class Control {
         }
     }
 
-    // テキストのハイライトを消す関数
+    // Dfileのハイライトを消すメソッド
     clearHighlight(layerView: LayerView, index: number) {
         if (layerView.componentArray[index].decorationFlag) {
             editor.setDecorations(layerView.componentArray[index].decoration, []);
@@ -144,15 +141,15 @@ export class Control {
         }
     }
 
-    // フォーカス処理をする関数
+    // フォーカス処理をするメソッド
     handleFocus(dfileMonitor: DfileMonitor, dockerParser: DockerParser, panel: vscode.WebviewPanel) {
         // アクティブエディタの変更を検出
         vscode.window.onDidChangeActiveTextEditor((tmpEditor) => {
-            if (tmpEditor) { // ファイルにフォーカスしたとき
-                if (tmpEditor?.document.getText() == editor.document.getText()) { // Dfileにフォーカスしたとき
+            if (tmpEditor) { // ファイルにフォーカスした場合
+                if (tmpEditor?.document.getText() == editor.document.getText()) { // Dfileにフォーカスした場合
                     dfileMonitor.dfileActiveFlag = true;
                     editor = vscode.window.activeTextEditor;
-                } else { // Dfile以外のファイルにフォーカスしたとき
+                } else { // Dfile以外のファイルにフォーカスした場合
                     dfileMonitor.dfileActiveFlag = false;
                     // Dfileと異なるエディタグループで、フォーカスされているファイルのタブを取得
                     let targetTab = vscode.window.tabGroups.activeTabGroup.tabs.find(tab =>

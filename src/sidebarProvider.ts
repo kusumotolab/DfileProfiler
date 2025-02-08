@@ -29,7 +29,8 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
         });
     }
 
-    private setHtml(webview: vscode.Webview): string {
+    // サイドバー用のHTMLをセットするメソッド
+    setHtml(webview: vscode.Webview): string {
         return `
             <!DOCTYPE html>
             <html lang="en">

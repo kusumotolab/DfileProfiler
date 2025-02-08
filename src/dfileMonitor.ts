@@ -5,16 +5,16 @@ import { Drawer } from "./drawer";
 export class DfileMonitor {
 
     editor : vscode.TextEditor;
-    originalTextGroup : string[];
-    dfileActiveFlag : boolean;
+    originalTextGroup : string[]; // ビルド時点でのDfileを命令ごとに分割した配列
+    dfileActiveFlag : boolean; // Dfileにフォーカスされているか判定するフラグ
 
     constructor(editor : vscode.TextEditor) {
         this.editor = editor;
-        this.originalTextGroup = new Array();
+        this.originalTextGroup = new Array(); 
         this.dfileActiveFlag = true;
     }
 
-    // dfileテキストの構文解析を行う関数
+    // Dfileの構文解析を行うメソッド
     textparse(editorText:string) : string[]{
         let textGroup = new Array();
 
@@ -71,7 +71,7 @@ export class DfileMonitor {
         return textGroup;
     }
 
-    // dfileの編集有無を検出する関数
+    // Dfileの編集を検知するメソッド
     run(drawer:Drawer, dockerParser:DockerParser){
         vscode.workspace.onDidChangeTextDocument(event => {
             if(this.dfileActiveFlag && dockerParser.normalEndFlag){
@@ -96,12 +96,12 @@ export class DfileMonitor {
         });
     }
 
-    // dfileの変更をビューに反映する関数
+    // Dfileの変更をビューに反映するメソッド
     setdfileChange(drawer:Drawer, dockerParser:DockerParser){
         const document = this.editor.document;
         const text = document.getText().replace(/\#.*\r?\n/g, '\n');
 
-        // 編集後のdfileを構文解析する
+        // 編集後のDfileを構文解析する
         const newTextGroup = this.textparse(text);
 
         const arrayLength = (this.originalTextGroup.length < newTextGroup.length) ? this.originalTextGroup.length : newTextGroup.length;
@@ -109,10 +109,7 @@ export class DfileMonitor {
             // 改行文字を除いて比較
             let processedOriginalText = this.originalTextGroup[i].replace(/\r?\n|\r/g,'');
             let processedNewText = newTextGroup[i].replace(/\r?\n|\r/g,'');
-            if(processedNewText !== processedOriginalText){ // ビルド時のdfileとの差分がある場合
-                // index=iを取得
-                // このiがdrawer.dfilei以上→0～i-1を消してi以降を塗る+drawer.dfileiを更新
-                // このiがdrawer.dfileiより小さい→i以降を塗る+drawer.dfileiを更新
+            if(processedNewText !== processedOriginalText){ // ビルド時のDfileとの差分がある場合
                 if(i >= drawer.dfileChangeLayeri){
                     let endLayerArrayIndex = 0;
                     if(i-1 < drawer.fileDirChangeLayeri){
@@ -120,9 +117,9 @@ export class DfileMonitor {
                     }else{
                         endLayerArrayIndex = drawer.fileDirChangeLayeri-1;
                     }
-                    drawer.changeRectangleColor(0, endLayerArrayIndex, false);
+                    drawer.changeCacheIcon(0, endLayerArrayIndex, false);
                 }
-                drawer.changeRectangleColor(i, dockerParser.layerArray.length-1, true);
+                drawer.changeCacheIcon(i, dockerParser.layerArray.length-1, true);
                 drawer.dfileChangeLayeri = i;
 
                 const index = text.indexOf(newTextGroup[i]);
@@ -132,13 +129,12 @@ export class DfileMonitor {
                 return;
             }
         }
-        // ビルド時のdfileに戻った場合
-        // 全ての色を消した後
-        // drawer.fileDiri以降を塗る(ただしdrawer.fileDiriはcomponentArrayの長さ未満でないといけない)
-        // drawer.dfileiをcomponentArrayの長さに更新
-        drawer.changeRectangleColor(0, dockerParser.layerArray.length-1, false); // 一度リセット
+
+        // ビルド時のDfileに戻った場合
+        drawer.changeCacheIcon(0, dockerParser.layerArray.length-1, false); // 一度リセット
         if(drawer.fileDirChangeLayeri < dockerParser.layerArray.length){
-            drawer.changeRectangleColor(drawer.fileDirChangeLayeri, dockerParser.layerArray.length-1, true);
+            // 外部ファイル・ディレクトリの編集有無を反映
+            drawer.changeCacheIcon(drawer.fileDirChangeLayeri, dockerParser.layerArray.length-1, true);
         }
         drawer.dfileChangeLayeri = dockerParser.layerArray.length;
     }

@@ -4,7 +4,7 @@ export class LayerViewComponent {
 
     index: number;
     instruction: string;
-    lineNum: number;
+    lineNum: number; // 対応するDfile行の先頭番号
     size: number;
     convertedSize: string;
     buildTime: string;
@@ -12,9 +12,9 @@ export class LayerViewComponent {
     buildTimeRectangle: Rectangle;
     sizeDiffRectangle: Rectangle | undefined;
     buildTimeDiffRectangle: Rectangle | undefined;
-    rebuildFlag: boolean;
-    decoration: any;
-    decorationFlag: boolean;
+    rebuildFlag: boolean; // ビルドキャッシュが効かなくなるか判定するフラグ
+    decoration: any; // 対応するDfile行のハイライト情報
+    decorationFlag: boolean; // 対応するDfile行がハイライト中か判定するフラグ
 
     constructor(index: number, instruction: string, lineNum: number, size: number, buildTime: string, sizeRectangle: Rectangle, buildTimeRectangle: Rectangle) {
         this.index = index;
@@ -29,7 +29,7 @@ export class LayerViewComponent {
         this.decorationFlag = false;
     }
 
-    // サイズの単位変換を行う関数
+    // サイズの単位変換を行うメソッド
     convertUnit(size: number): string {
         const kb = 1000;
         const mb = Math.pow(kb, 2);

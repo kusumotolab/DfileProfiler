@@ -6,9 +6,9 @@ import { State } from './state';
 export class Drawer {
 
     layerView: LayerView;
-    stateArray: State[];
-    dfileChangeLayeri: number;
-    fileDirChangeLayeri: number;
+    stateArray: State[]; // ビルド結果の履歴
+    dfileChangeLayeri: number; // Dfileの編集によってビルドキャッシュが無効化するレイヤの開始位置
+    fileDirChangeLayeri: number; // 外部ファイル・ディレクトリの編集によってビルドキャッシュが無効化するレイヤの開始位置
 
     constructor(layerView: LayerView, stateArray: State[]) {
         this.layerView = layerView;
@@ -19,29 +19,29 @@ export class Drawer {
         this.fileDirChangeLayeri = 0;
     }
 
-    // エディタをレイヤービューにマッピングして描画する関数
+    // Dfileとレイヤビューをマッピングして描画するメソッド
     run(editorText: string, layerArray: any[]) {
         const lines = editorText.split('\n');
         let layerArrayIndex = 0;
 
-        // レイヤー配列からサイズ描画配列とビルド時間描画配列を作成
-        // 各配列の要素は棒グラフの幅の長さ
-        const scale = 1.4; // 棒グラフの倍率(必要に応じて調整)
+        // レイヤ配列からサイズ描画配列とビルド時間描画配列を作成
+        const scale = 1.4; // 棒グラフの倍率
         var sizeRectWidthArray = this.calculateRectWidth('size', layerArray, scale);
         var buildTimeRectWidthArray = this.calculateRectWidth('buildTime', layerArray, scale);
 
-        // 棒グラフのx座標を指定(必要に応じて調整)
+        // 棒グラフのx座標を指定
         const sizeX = 145;
         const buildTimeX = (sizeX + 100 * scale + 110);
 
-        let lineHeight = 23; // 棒グラフの縦の長さ(高さ)(必要に応じて調整)
-        let lineSpace = 7; // 棒グラフの間隔(必要に応じて調整)
+        let lineHeight = 23; // 棒グラフの縦の長さ(高さ)
+        let lineSpace = 7; // 棒グラフの間隔
 
         let totalSize = 0;
         let totalBuildTime = 0;
 
-        let yOffset = 80; // 必要に応じて調整
-        let y = lineHeight * 5 + yOffset; // 必要に応じて調整
+        // 棒グラフのy座標を指定
+        let yOffset = 80;
+        let y = lineHeight * 5 + yOffset;
 
         for (let i = 0; i < lines.length; i++) {
             if (lines[i].startsWith('FROM') || lines[i].startsWith('RUN') || lines[i].startsWith('ADD') || lines[i].startsWith('COPY') || lines[i].startsWith('WORKDIR')) {
@@ -65,7 +65,7 @@ export class Drawer {
                 const sizeRectangle = new Rectangle(sizeX, y, sizeRectWidthArray[layerArrayIndex], lineHeight, 'New Layer');
                 // ビルド時間用の棒グラフ情報を作成
                 const buildTimeRectangle = new Rectangle(buildTimeX, y, buildTimeRectWidthArray[layerArrayIndex], lineHeight, 'New Layer');
-                // レイヤービュー1行分の構成要素を作成
+                // レイヤビュー1行分の構成要素を作成
                 const layerViewComponent = new LayerViewComponent(layerArrayIndex, instruction, i, parseInt(layerArray[layerArrayIndex].size), layerArray[layerArrayIndex].buildTime, sizeRectangle, buildTimeRectangle);
 
                 this.layerView.componentArray.push(layerViewComponent);
@@ -80,10 +80,10 @@ export class Drawer {
         // トータルビルド時間用の棒グラフ情報を作成
         let totalBuildTimeRectangleWidth = (totalBuildTime !== 0) ? 100 * scale : 0;
         const totalBuildTimeRectangle = new Rectangle(buildTimeX, y, totalBuildTimeRectangleWidth, lineHeight, 'New Image');
-        // レイヤービュー1行分(トータル部分)の構成要素を作成
+        // レイヤビュー1行分(トータル部分)の構成要素を作成
         this.layerView.totalComponent = new LayerViewComponent(-1, '', -1, totalSize, ((Math.floor(totalBuildTime * 100) / 100).toString() + 's'), totalSizeRectangle, totalBuildTimeRectangle);
 
-        // レイヤービューを更新
+        // レイヤビューを更新
         this.layerView.header1 = 'Build Completed!';
 
         // 前回のビルドとの差分をビューに反映
@@ -91,28 +91,29 @@ export class Drawer {
 
         this.layerView.setComponentsScript();
         this.layerView.setCanvasScript(false);
-        this.layerView.loading = `var gif = document.getElementById('loading');
-                                  gif.style.display = 'none'; // GIFを非表示`;
+        this.layerView.loading
+            = `var gif = document.getElementById('loading');
+                gif.style.display = 'none'; // GIFを非表示`;
         this.layerView.resizeScript
             = `const container = document.getElementById('container');
-        let scale = 1;
-        const updateScale = () => {
-            const scaleX = window.innerWidth / container.clientWidth;
-            const scaleY = window.innerHeight / container.clientHeight;
-            scale = Math.min(scaleX, scaleY) * 0.23;
-            container.style.transform = \`scale(\${scale})\`;
-        };
+                let scale = 1;
+                const updateScale = () => {
+                    const scaleX = window.innerWidth / container.clientWidth;
+                    const scaleY = window.innerHeight / container.clientHeight;
+                    scale = Math.min(scaleX, scaleY) * 0.23;
+                    container.style.transform = \`scale(\${scale})\`;
+                };
 
-        // 初期スケール設定
-        updateScale();
+                // 初期スケール設定
+                updateScale();
 
-        // リサイズイベントに対応するためリスナーを追加
-        window.addEventListener('resize', updateScale);`;
+                // リサイズイベントに対応するためリスナーを追加
+                window.addEventListener('resize', updateScale);`;
 
         this.layerView.setHtml();
     }
 
-    // レイヤー群から各棒グラフの幅の長さを算出する関数
+    // レイヤ配列から各棒グラフの幅の長さを算出するメソッド
     calculateRectWidth(property: string, layerArray: any[], scale: number) {
         let rectWidthArray = new Array();
         let total = 0;
@@ -157,14 +158,14 @@ export class Drawer {
         return rectWidthArray;
     }
 
-    // 前回のビルド時との差分をビューに反映する関数
+    // 前回のビルド時との差分をビューに反映するメソッド
     setDiffInfo(stateArray: State[], scale: number, cmpIndex: number) {
         if (stateArray.length > 0) {
             const preLayerView = stateArray[cmpIndex].layerView;
             const currentLayerView = this.layerView;
 
             if (currentLayerView.totalComponent?.size && preLayerView.totalComponent?.size) {
-                // 各レイヤーの差分を取得
+                // 各レイヤの差分を取得
                 const sizeDiffArray = new Array();
                 const buildTimeDiffArray = new Array();
                 for (let i = 0; i < currentLayerView.componentArray.length; i++) {
@@ -237,8 +238,9 @@ export class Drawer {
                 }
                 currentLayerView.totalComponent.buildTimeRectangle.info = totalBuildTimeDiff;
 
-                // 各レイヤーの差分グラフを作成
-                let sizeX = 145 + 50 * scale; // 棒グラフのx座標を指定(必要に応じて調整)
+                // 各レイヤの差分グラフを作成
+                // 棒グラフのx座標を指定
+                let sizeX = 145 + 50 * scale;
                 let buildTimeX = (145 + 100 * scale + 110) + 50 * scale;
 
                 // 最大値を基準とする
@@ -283,8 +285,8 @@ export class Drawer {
         }
     }
 
-    // レイヤービューの棒グラフカラーを更新する関数
-    changeRectangleColor(startLayerArrayIndex: number, endLayerArrayIndex: number, flag: boolean) {
+    // レイヤビューのビルドキャッシュ通知アイコンを更新するメソッド
+    changeCacheIcon(startLayerArrayIndex: number, endLayerArrayIndex: number, flag: boolean) {
         for (let i = startLayerArrayIndex; i <= endLayerArrayIndex; i++) {
             if (flag) {
                 this.layerView.componentArray[i].rebuildFlag = true;
@@ -297,7 +299,7 @@ export class Drawer {
         this.layerView.setHtml();
     }
 
-    // layerViewComponentの行番号を更新する関数
+    // レイヤと行番号のマッピングを更新するメソッド
     changeLineNum(pivot: number, incDec: number) {
         this.layerView.componentArray.forEach(component => {
             if (component.lineNum >= pivot) {

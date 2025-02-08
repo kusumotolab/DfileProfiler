@@ -20,8 +20,8 @@ export class DockerParser {
     drawer: Drawer;
     dfileMonitor: DfileMonitor;
     fileDirMonitor: FileDirMonitor;
-    stateArray: State[];
-    normalEndFlag: boolean;
+    stateArray: State[]; // ビルド結果の履歴
+    normalEndFlag: boolean; // 解析処理が正常終了したか判定するフラグ
 
     constructor(editor: vscode.TextEditor, drawer: Drawer, dfileMonitor: DfileMonitor, fileDirMonitor: FileDirMonitor, stateArray: State[]) {
         this.editor = editor;
@@ -33,9 +33,10 @@ export class DockerParser {
         this.normalEndFlag = false;
     }
 
+    // ビルド時の解析を行うメソッド
     run(layerView: LayerView) {
         if (this.dfileMonitor.dfileActiveFlag) {
-            // エディタのテキスト(dfileの内容)を取得
+            // Dfileの内容を取得
             const editorText = this.editor.document.getText();
 
             const dockerfilePath = this.editor?.document.uri.fsPath;
@@ -45,14 +46,15 @@ export class DockerParser {
             const lastSeparatorIndex = Math.max(dockerfilePath.lastIndexOf('/'), dockerfilePath.lastIndexOf('\\'));
             const buildContext = dockerfilePath.substring(0, lastSeparatorIndex);
 
-            // buildコマンドを実行
+            // レイヤビューを更新
             layerView.header1 = 'Building......';
             layerView.loading = `var gif = document.getElementById('loading');
-            gif.style.display = 'block'; // GIFを表示`;
+                                 gif.style.display = 'block'; // GIFを表示`;
             layerView.setHtml();
 
             let buildLog = '';
-            // Dockerビルドのコマンドをspawnで実行
+
+            // buildコマンドを実行
             let buildProcess = spawn('docker', ['build', '--progress=plain', '-t', 'myimage', '-f', dockerfilePath, buildContext]);
 
             // デバッグ用
@@ -60,7 +62,7 @@ export class DockerParser {
                 console.log(data.toString());
             }); */
 
-            // 標準エラー出力をWebviewに送信
+            // ビルド時の出力情報をWebviewに送信
             buildProcess.stderr.on('data', (data: any) => {
                 layerView.webview.postMessage({ type: 'stderr', text: data.toString() });
                 buildLog += data.toString();
@@ -81,20 +83,20 @@ export class DockerParser {
                     // <none>イメージを一括削除する
                     exec(`docker image prune -f`);
 
-                    //レイヤー情報を作成
+                    //レイヤ情報を作成
                     this.splitHistoryInfo(historyRes.stdout);
                     this.splitBuildInfo(buildLog);
                     this.addFileDirInfo(buildContext);
 
                     // 過去のビルドコメントを全て取得
-                    // 上限に達している場合は一番古いStateを削除しておく
-                    if (this.stateArray.length > 5) { // ここで保持しておく過去のビルド数を設定
+                    // 上限に達している場合は一番古いビルド結果を削除しておく
+                    if (this.stateArray.length > 5) { // 保持しておく過去のビルド結果数は5まで
                         this.stateArray.shift();
                     }
                     layerView.radioCnt = this.stateArray.length;
                     this.setCommentArray(layerView);
 
-                    // レイヤービューに描画
+                    // レイヤビューに描画
                     this.drawer.run(editorText, this.layerArray);
 
                     this.drawer.dfileChangeLayeri = this.layerArray.length;
@@ -111,11 +113,11 @@ export class DockerParser {
         }
     }
 
-    // historyコマンドの結果を加工してレイヤー情報を作成する関数
+    // historyコマンドの出力情報を加工してレイヤ情報を作成するメソッド
     splitHistoryInfo(historyStr: string) {
         const lines = historyStr.split('\n');
 
-        // historyコマンドの結果のうち最終行からbaseImage部分に該当するレイヤーの範囲を求める
+        // historyコマンドの出力情報のうち最終行からベースイメージ部分に該当する範囲を求める
         let count = 0;
         let baseImageEndPos = 0;
         for (let i = 0; i < lines.length; i++) {
@@ -129,7 +131,7 @@ export class DockerParser {
             }
         };
 
-        // baseImageのサイズを求める
+        // ベースイメージのサイズを求める
         let baseImageSize = 0;
         for (let i = (lines.length - 1); i >= baseImageEndPos; i--) {
             const elements = lines[i].split(/\s{3,}/); // 半角スペース3つ以上で分割する
@@ -143,7 +145,7 @@ export class DockerParser {
             }
         }
 
-        // レイヤーのインスタンスを作成
+        // レイヤ情報を作成
         let layer = new Layer(this.dfileMonitor.originalTextGroup[0], baseImageSize.toString(), '');
         this.layerArray.push(layer);
         for (let i = (baseImageEndPos - 1); i >= 0; i--) {
@@ -160,7 +162,7 @@ export class DockerParser {
         }
     }
 
-    // buildコマンドのログを加工してレイヤー情報を作成する関数
+    // buildコマンドの出力情報を加工してレイヤ情報に追加するメソッド
     splitBuildInfo(buildInfoStr: string) {
         const groups = buildInfoStr.split(/\n\s*\n/);
         // デバッグ用
@@ -172,7 +174,7 @@ export class DockerParser {
         const tmp3layerGroup = tmp2layerGroup.filter(group => /DONE \d+\.\d+s|CACHED/.test(group));
         const layerGroup = tmp3layerGroup.filter(group => /FROM|RUN|COPY|ADD|WORKDIR/.test(group));
 
-        // レイヤーを古いものから順にソートし直す
+        // レイヤを古いものから順にソート
         const sortedLayerGroup = layerGroup.sort((a, b) => {
             const getStep = (str: string) => {
                 const match = str.match(/\[\s*(\d+)\/\d+\]/);
@@ -185,33 +187,31 @@ export class DockerParser {
             let match = sortedLayerGroup[i].match(/(?:DONE\s(\d+\.\d+s))|CACHED/);
             if (match) {
                 if (match[1]) {
-                    layer.buildTime = match[1]; // 秒数を取得
+                    layer.buildTime = match[1];
                 } else {
-                    layer.buildTime = 'CACHED'; // CACHEDを取得
+                    layer.buildTime = 'CACHED';
                 }
             }
         })
     }
 
-    // ファイル・ディレクトリ情報をレイヤー情報に追加する関数
+    // 外部ファイル・ディレクトリ情報をレイヤ情報に追加するメソッド
     addFileDirInfo(subjectPath: string) {
         const pattern = /^(COPY|ADD)\s+\S+/;
 
-        // COPY・ADDコマンドを検索し、マッチするたびに処理
         this.layerArray.forEach(layer => {
             let match = layer.code.match(pattern);
             if (match) {
                 let source = match[0].split(/\s+/)[1];  // コピー元のパスを取得
-                this.handlePath(source, layer.fileDirArray, subjectPath);  // パスの処理を行う関数を呼び出し
+                this.handlePath(source, layer.fileDirArray, subjectPath);  // パスの処理を行う
             }
         });
     }
 
-    // パスを処理する関数
+    // パスを処理するメソッド
     handlePath(source: string, fileDirArray: string[], subjectPath: string) {
-        // パスがURLかどうかをチェック
         if (this.isUrl(source)) {
-            fileDirArray.push(source);  // URLの場合はそのまま配列に追加
+            fileDirArray.push(source);  // パスがURLの場合はそのまま配列に追加
         } else {
             const resolvedPath = path.join(subjectPath, source);  // 相対パスを絶対パスに変換
             if (fs.existsSync(resolvedPath)) {  // パスが存在するかチェック
@@ -230,7 +230,7 @@ export class DockerParser {
         }
     }
 
-    // パスがURLかどうかを判定する関数
+    // パスがURLかどうかを判定するメソッド
     isUrl(path: string): boolean {
         try {
             new URL(path);
@@ -240,7 +240,7 @@ export class DockerParser {
         }
     }
 
-    // ディレクトリ内の全ファイルを取得する関数
+    // ディレクトリ内の全ファイルを取得するメソッド
     getALLFilesDirs(currentPath: string, fileDirArray: string[]) {
         const entries = fs.readdirSync(currentPath);  // ディレクトリ内の全ファイル・ディレクトリを同期的に取得
         for (const entry of entries) {
@@ -254,12 +254,12 @@ export class DockerParser {
             } else if (stats.isDirectory()) {
                 fileDirArray.push(fullPath);
                 this.fileDirMonitor.initialStructure.push(fullPath);
-                this.getALLFilesDirs(fullPath, fileDirArray);  // ディレクトリの場合は再帰的に処理
+                this.getALLFilesDirs(fullPath, fileDirArray);  // 再帰的に全ファイル・ディレクトリを取得
             }
         }
     }
 
-    // 過去のビルドコメントを全て取得する関数
+    // 過去のビルドコメントを全て取得するメソッド
     setCommentArray(layerView: LayerView) {
         for (let i = 0; i < layerView.radioCnt; i++) {
             layerView.commentArray[i] = this.stateArray[i].layerView.comment;
