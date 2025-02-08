@@ -4,12 +4,20 @@ import { Control } from './control';
 export class SidebarProvider implements vscode.WebviewViewProvider {
 
     public static readonly viewType = 'extension.sidebar';
+    private static isRegistered = false; // 拡張機能が有効化済みか判定するフラグ
     control: Control;
 
     constructor(private readonly context: vscode.ExtensionContext, control: Control) {
+        this.control = control;
+        if (SidebarProvider.isRegistered) {
+            vscode.window.showInformationMessage(
+                'DfileProfiler is already activated; click the "Build" button to get started.'
+            );
+            return;
+        }
         vscode.commands.executeCommand('workbench.view.extension.sidebarView');
         vscode.window.registerWebviewViewProvider(SidebarProvider.viewType, this);
-        this.control = control;
+        SidebarProvider.isRegistered = true;
     }
 
     resolveWebviewView(webviewView: vscode.WebviewView): void {
