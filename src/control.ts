@@ -32,7 +32,7 @@ export class Control {
             // アクティブなエディタを取得
             editor = vscode.window.activeTextEditor;
             if (!editor) {
-                vscode.window.showErrorMessage('Tool Launch Error! : Please click the "DfileProfiler" button after selecting the Dockerfile.');
+                vscode.window.showErrorMessage('Tool Launch Error! : Please click the "Build" button after selecting the Dockerfile.');
             }
             panel?.dispose(); // 既存のWebViewがあれば消す
         }
