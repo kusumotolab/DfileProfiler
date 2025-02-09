@@ -1,69 +1,57 @@
-# dfile-profiler README
+# DfileProfiler
+<div align="center">
+    <img src="assets/icon.png" width="40%" alt="logo">
+</div>
+
+<p align="center">
+    <strong>DfileProfiler is a Visual Studio Code extension designed to analyze and visualize Docker image builds.</strong><br>
+    This tool provides insights into the size and build time for each layer, and changes across different builds.
+</p>
+
+## Requirements
+- Windows 10 or later
+- macOS 10.15 or later
+- Visual Studio Code 1.97 or later
+- Docker: Must be installed and running
 
 ## Features
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+### Build and Analyze Docker Images
+1. Start Docker.
+1. Open VSCode and navigate to `File → Open Folder...` to open your Docker project directory.
+1. Open the Dockerfile and click the `DfileProfiler` button to activate the extension. A sidebar will appear with a text area and the `Build` button.
+1. You can enter comments in the text area (similar to Git commit messages) to document changes for the build (optional).
+1. Click the `Build` button to start the image build process.
+1. Once the build is complete, an analysis view (Layer View) will be displayed. The generated image will be named `myimage`.
+<img src="assets/tool_build.gif" width="920" height="509"/>
 
-For example if there is an image subfolder under your extension project workspace:
+### Layer View
+The visualization panel allows switching between different views:
 
-\!\[feature X\]\(images/feature-x.png\)
+- Relative View: Displays each layer's size and build time as a percentage of the total.
+- Diff View: Displays differences in size and build time between the latest build and a selected previous build.
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+If multiple builds exist, a pagination system allows selecting builds for comparison.
+<img src="assets/tool_view.gif" width="920" height="509"/>
 
-## Requirements
+### Mapping Layers to Dockerfile
+Hovering over a layer in Layer View highlights the corresponding lines in the Dockerfile.
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+Clicking on a layer navigates to the corresponding lines in the Dockerfile.
+<img src="assets/tool_mapping.gif" width="920" height="509"/>
 
-## Extension Settings
-
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
-
-For example:
-
-This extension contributes the following settings:
-
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
-
-## Known Issues
-
-Calling out known issues can help limit users opening duplicate issues against your extension.
+### Rebuild Notification for Affected Layers
+If the Dockerfile or an external dependency file is modified, an icon appears indicating which layers require rebuilding due to build cache invalidation.
+<img src="assets/tool_cache.gif" width="920" height="509"/>
 
 ## Release Notes
 
-Users appreciate release notes as you update your extension.
-
 ### 1.0.0
-
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
+Initial release with features presented in [the IEICE technical report](https://ken.ieice.org/ken/paper/20250113FchM/).
 
 ### 1.1.0
+Added the feature to select builds for comparison and to input comments at build time.
 
-Added features X, Y, and Z.
-
----
-
-## Following extension guidelines
-
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
-
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
-
-## Working with Markdown
-
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
-
-## For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+## Future Enhancements
+- Performance improvements in rendering.
+- Functionality to estimate the cause of Dockerfile smells and suggest fixes.
