@@ -27,7 +27,7 @@
 <img src="assets/tool_build.gif" width="100%" alt="tool_build_anlyze"/>
 
 ### Layer View
-The visualization panel allows switching between different views:
+Tabs allow switching between the two views:
 
 - Relative View: Displays each layer's size and build time as a percentage of the total.
 - Diff View: Displays differences in size and build time between the latest build and a selected previous build.
