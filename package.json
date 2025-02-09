@@ -1,15 +1,36 @@
 {
   "name": "dfile-profiler",
-  "displayName": "dfile-profiler",
-  "description": "Dfile-Profiler",
-  "version": "1.0.0",
-  "engines": {
-    "vscode": "^1.89.0"
-  },
+  "displayName": "DfileProfiler",
+  "version": "1.1.0",
+  "publisher": "r-moriut",
+  "description": "A Dockerfile Optimization Support Tool for Improving Docker Image Quality",
+  "keywords": [
+		"docker",
+		"dockerfile",
+		"visualise",
+		"optimize",
+		"profiler"
+	],
   "categories": [
-    "Other"
+    "Debuggers", "Visualization", "Other"
+  ],
+  "icon": "assets/icon.png",
+  "pricing": "Free",
+  "engines": {
+    "vscode": "^1.97.0"
+  },
+  "activationEvents": [
+    "onCommand:dfileProfiler.start"
   ],
   "main": "./dist/extension.js",
+  "bugs": {
+    "url": "https://github.com/kusumotolab/DfileProfiler/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kusumotolab/DfileProfiler.git"
+  },
+  "homepage": "https://github.com/kusumotolab/DfileProfiler/blob/main/README.md",
   "contributes": {
     "commands": [
       {
