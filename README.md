@@ -24,7 +24,7 @@
 1. Click the `Build` button to start the image build process.
 1. Once the build is complete, an analysis view (Layer View) will be displayed. The generated image will be named `myimage`.
 
-<img src="assets/tool_build.gif" width="920" height="509" alt="tool_build_anlyze"/>
+<img src="assets/tool_build.gif" width="960" height="516" alt="tool_build_anlyze"/>
 
 ### Layer View
 The visualization panel allows switching between different views:
@@ -34,19 +34,19 @@ The visualization panel allows switching between different views:
 
 If multiple builds exist, a pagination system allows selecting builds for comparison.
 
-<img src="assets/tool_view.gif" width="920" height="509" alt="tool_view"/>
+<img src="assets/tool_view.gif" width="960" height="516" alt="tool_view"/>
 
 ### Mapping Layers to Dockerfile
 Hovering over a layer in Layer View highlights the corresponding lines in the Dockerfile.
 
 Clicking on a layer navigates to the corresponding lines in the Dockerfile.
 
-<img src="assets/tool_mapping.gif" width="920" height="509" alt="tool_mapping"/>
+<img src="assets/tool_mapping.gif" width="960" height="516" alt="tool_mapping"/>
 
 ### Rebuild Notification for Affected Layers
 If the Dockerfile or an external dependency file is modified, an icon appears indicating which layers require rebuilding due to build cache invalidation.
 
-<img src="assets/tool_cache.gif" width="920" height="509" alt="tool_cache"/>
+<img src="assets/tool_cache.gif" width="960" height="516" alt="tool_cache"/>
 
 ## Release Notes
 
