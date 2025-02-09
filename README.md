@@ -16,11 +16,11 @@
 
 ## Features
 
-### Build and Analyze Docker Images
+### Build and Analyze Docker Image
 1. Start Docker.
-1. Open VSCode and navigate to `File → Open Folder...` to open your Docker project directory.
+1. Open VSCode and navigate to `File → Open Folder...` to open your Docker project.
 1. Open the Dockerfile and click the `DfileProfiler` button to activate the extension. A sidebar will appear with a text area and the `Build` button.
-1. You can enter comments in the text area (similar to Git commit messages) to document changes for the build (optional).
+1. You can input comments in the text area (similar to Git commit messages) to document changes for the build (optional).
 1. Click the `Build` button to start the image build process.
 1. Once the build is complete, an analysis view (Layer View) will be displayed. The generated image will be named `myimage`.
 
